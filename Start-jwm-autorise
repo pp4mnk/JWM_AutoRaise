@@ -1,0 +1,3 @@
+#!/bin/sh
+# Start JWM auto-raise
+/usr/local/bin/jwm-autoraise &

@@ -1,0 +1,48 @@
+#!/bin/sh
+#PP4MNK jwm_autorise September 2026
+
+# JWM auto-raise helper
+# Raise a window after the pointer has remained over it for a short time.
+
+INTERVAL=0.1
+DELAY_TICKS=4       # 4 x 0.1 = about 400 ms
+
+command -v xdotool >/dev/null 2>&1 || {
+    echo "jwm-autoraise: xdotool is not installed."
+    exit 1
+}
+
+last_window=""
+ticks=0
+raised=""
+
+while true
+do
+    window="$(xdotool getmouselocation --shell 2>/dev/null |
+              sed -n 's/^WINDOW=//p')"
+
+    if [ -z "$window" ] || [ "$window" = "0" ]; then
+        last_window=""
+        ticks=0
+        raised=""
+        sleep "$INTERVAL"
+        continue
+    fi
+
+    if [ "$window" != "$last_window" ]; then
+        last_window="$window"
+        ticks=0
+        raised=""
+    else
+        ticks=$((ticks + 1))
+
+        if [ "$ticks" -ge "$DELAY_TICKS" ] &&
+           [ "$raised" != "$window" ]; then
+
+            xdotool windowraise "$window" 2>/dev/null
+            raised="$window"
+        fi
+    fi
+
+    sleep "$INTERVAL"
+done
